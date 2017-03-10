@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String mUrl = "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100";
 
+    ///storage/emulated/0/tencent/QQ_Images/20170210271486692447480144.jpg 有问题的本地图片地址
     private IntensifyImageView intensifyImageView;
 
     private ViewPager viewPager;
@@ -103,9 +104,11 @@ public class MainActivity extends AppCompatActivity {
             if (utils==null){
                 utils=new Utils();
             }
-            File file = new File("/storage/emulated/0/tencent/QQ_Images/20170210271486692447480144.jpg");
+
+            File file = new File("/storage/emulated/0/tencent/QQ_Images/-4e6e4885e7818ae2.jpg");
             Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),getBitmapOption(1));
             //TODO 根据图片大小缩放，防止超过4000
+            intensifyImageView.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
             intensifyImageView.setImage(Bitmap2InputStream(bitmap));
 //            utils.loadImage(MainActivity.this,intensifyImageView,urls[position]);
             container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
@@ -123,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPurgeable = true;
         options.inSampleSize = inSampleSize;
+        options.inPreferredConfig= Bitmap.Config.ARGB_4444;
         return options;
     }
 
