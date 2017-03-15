@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 //                }
 //            }).start();
-            utils.loadImage(MainActivity.this,intensifyImageView,urls[position]);
+            utils.loadImage(MainActivity.this,intensifyImageView,urls[position],viewPager.getWidth(),viewPager.getHeight());
             container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
             return intensifyImageView;
         }
