@@ -38,9 +38,8 @@ import me.kareluo.intensify.image.IntensifyImageView;
  */
 
 public class Utils {
+
     private  ExecutorService mExecutor;
-
-
     /**
      * 判断图片是否为gif
      * @param path
@@ -62,7 +61,7 @@ public class Utils {
 
 
 
-    public  void loadImage(Context context, final IntensifyImageView intensifyImage, final String url) {
+    public void loadImage(Context context, final IntensifyImageView intensifyImage, final String url) {
         if (mExecutor==null){
             mExecutor= Executors.newCachedThreadPool();
         }
@@ -82,7 +81,8 @@ public class Utils {
                         if (bitmap != null && !bitmap.isRecycled()) {
                             intensifyImage.setImage(Bitmap2InputStream(bitmap));
                             intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-                            //如果使用文件作为BitmapRegionDecoder的输入，有的图片在Skia解码的时候会失败，抛出异常
+                            //// TODO: 2017/3/15  通过计算得到ScaleMin和ScaleMax
+                            //如果使用文件作为BitmapRegionDecoder的输入，有的图片在Skia解码的时候会失败，抛出异常需要使用BitmapFactory重新对文件进行解码
 
 //                            handler.sendEmptyMessage(0);//图片加载完毕后获取文件
 //                            runOnUiThread(new Runnable() {

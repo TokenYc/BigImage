@@ -7,10 +7,9 @@
     android:layout_height="match_parent"
     tools:context="com.example.a24706.imagetest.MainActivity">
 
-    <android.support.v4.view.ViewPager
+    <com.example.a24706.imagetest.FixedViewPager
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"/>
 
-    </android.support.v4.view.ViewPager>
 </LinearLayout>

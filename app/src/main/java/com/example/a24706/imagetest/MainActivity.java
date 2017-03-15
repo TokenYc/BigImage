@@ -52,10 +52,11 @@ public class MainActivity extends AppCompatActivity {
     ///storage/emulated/0/tencent/QQ_Images/20170210271486692447480144.jpg 有问题的本地图片地址
     private IntensifyImageView intensifyImageView;
 
-    private ViewPager viewPager;
+    private FixedViewPager viewPager;
 
     private String[] urls = {
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
+            "http://7xpp4m.com1.z0.glb.clouddn.com/article.jpg",
             "http://qianfan-qianfanyun.qiniudn.com/20170307271488875120322113.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170307271488866783683931.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         Fresco.initialize(this);
 
         setContentView(R.layout.activity_main);
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager = (FixedViewPager) findViewById(R.id.viewpager);
         viewPager.setAdapter(new MyPagerAdapter());
 //        String imagePath= Environment.getExternalStorageDirectory()+ File.separator+"hhz.png";
 
@@ -100,17 +101,29 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            IntensifyImageView intensifyImageView = new IntensifyImageView(MainActivity.this);
+            final IntensifyImageView intensifyImageView = new IntensifyImageView(MainActivity.this);
             if (utils==null){
                 utils=new Utils();
             }
-
-            File file = new File("/storage/emulated/0/tencent/QQ_Images/-4e6e4885e7818ae2.jpg");
-            Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),getBitmapOption(1));
-            //TODO 根据图片大小缩放，防止超过4000
-            intensifyImageView.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-            intensifyImageView.setImage(Bitmap2InputStream(bitmap));
-//            utils.loadImage(MainActivity.this,intensifyImageView,urls[position]);
+            //todo 查看源码找到图片双击后缩放的最大倍数
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    File file = new File("/storage/emulated/0/tencent/QQ_Images/-4e6e4885e7818ae2.jpg");
+//                    final Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),getBitmapOption(1));
+//                    intensifyImageView.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
+//                    intensifyImageView.setMinimumScale(0.5f);
+//                    intensifyImageView.setMaximumScale(5.0f);
+//                    final InputStream inputStream=Bitmap2InputStream(bitmap);
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            intensifyImageView.setImage(inputStream);
+//                        }
+//                    });
+//                }
+//            }).start();
+            utils.loadImage(MainActivity.this,intensifyImageView,urls[position]);
             container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
             return intensifyImageView;
         }
