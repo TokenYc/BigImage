@@ -3,6 +3,7 @@ package com.example.a24706.imagetest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.a24706.imagetest.photodraweeview.PhotoDraweeView;
 import com.facebook.binaryresource.BinaryResource;
 import com.facebook.binaryresource.FileBinaryResource;
 import com.facebook.cache.common.CacheKey;
@@ -24,11 +26,18 @@ import com.facebook.datasource.BaseDataSubscriber;
 import com.facebook.datasource.DataSource;
 import com.facebook.datasource.DataSubscriber;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.drawee.drawable.ScalingUtils;
+import com.facebook.drawee.generic.GenericDraweeHierarchy;
+import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.cache.DefaultCacheKeyFactory;
+import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.core.ImagePipeline;
 import com.facebook.imagepipeline.core.ImagePipelineFactory;
 import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
@@ -123,9 +132,36 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 //                }
 //            }).start();
-            utils.loadImage(MainActivity.this,intensifyImageView,urls[position],viewPager.getWidth(),viewPager.getHeight());
-            container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-            return intensifyImageView;
+            final PhotoDraweeView photoDraweeView = new PhotoDraweeView(MainActivity.this);
+
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(urls[position]))
+                    .setResizeOptions(new ResizeOptions(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels))
+                    .build();
+            photoDraweeView.setController(Fresco.newDraweeControllerBuilder()
+                    .setOldController(photoDraweeView.getController())
+                    .setImageRequest(request)
+                    .setAutoPlayAnimations(true)
+                    .setControllerListener(new BaseControllerListener<ImageInfo>() {
+                        @Override
+                        public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+                            super.onFinalImageSet(id, imageInfo, animatable);
+                            photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
+                            //从本地获取已缓存的文件，用于图片二维码识别
+                        }
+                    })
+                    .build());
+            GenericDraweeHierarchy hierarchy =
+                    new GenericDraweeHierarchyBuilder(container.getResources())
+                            .setActualImageScaleType(ScalingUtils.ScaleType.FIT_CENTER)
+                            .setFadeDuration(300)
+                            .build();
+            photoDraweeView.setImageURI(urls[position]);
+            photoDraweeView.update(1080,720);
+            photoDraweeView.setHierarchy(hierarchy);
+//            utils.loadImage(MainActivity.this,intensifyImageView,urls[position],viewPager.getWidth(),viewPager.getHeight());
+//            container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            container.addView(photoDraweeView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            return photoDraweeView;
         }
 
         @Override
