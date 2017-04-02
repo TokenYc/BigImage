@@ -54,20 +54,23 @@ import me.kareluo.intensify.image.IntensifyImage;
 import me.kareluo.intensify.image.IntensifyImageView;
 
 
+/**
+ * 如果只用IntensifyImageView来展示的话，Gif不好处理，因为RegionDecoder是不支持Gif的。
+ * 所以设计成以PhotoView为主，IntensifyImageView为辅的策略
+ */
 public class MainActivity extends AppCompatActivity {
 
     private String mUrl = "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100";
 
     ///storage/emulated/0/tencent/QQ_Images/20170210271486692447480144.jpg 有问题的本地图片地址
-    private IntensifyImageView intensifyImageView;
+//    private IntensifyImageView intensifyImageView;
 
     private FixedViewPager viewPager;
 
     private String[] urls = {
+            "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
             "http://7xpp4m.com1.z0.glb.clouddn.com/article.jpg",
-            "http://qianfan-qianfanyun.qiniudn.com/20170307271488875120322113.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
-            "http://qianfan-qianfanyun.qiniudn.com/20170307271488866783683931.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170227271488161061406929.jpg?imageView2/1/w/640/h/852/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170227271488161042740429.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
@@ -114,6 +117,10 @@ public class MainActivity extends AppCompatActivity {
             if (utils==null){
                 utils=new Utils();
             }
+            PhotoImageView photoImageView=new PhotoImageView(MainActivity.this);
+            photoImageView.loadImage(urls[position]);
+            container.addView(photoImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            return photoImageView;
             //todo 查看源码找到图片双击后缩放的最大倍数
 //            new Thread(new Runnable() {
 //                @Override
@@ -132,36 +139,37 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 //                }
 //            }).start();
-            final PhotoDraweeView photoDraweeView = new PhotoDraweeView(MainActivity.this);
-
-            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(urls[position]))
-                    .setResizeOptions(new ResizeOptions(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels))
-                    .build();
-            photoDraweeView.setController(Fresco.newDraweeControllerBuilder()
-                    .setOldController(photoDraweeView.getController())
-                    .setImageRequest(request)
-                    .setAutoPlayAnimations(true)
-                    .setControllerListener(new BaseControllerListener<ImageInfo>() {
-                        @Override
-                        public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
-                            super.onFinalImageSet(id, imageInfo, animatable);
-                            photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
-                            //从本地获取已缓存的文件，用于图片二维码识别
-                        }
-                    })
-                    .build());
-            GenericDraweeHierarchy hierarchy =
-                    new GenericDraweeHierarchyBuilder(container.getResources())
-                            .setActualImageScaleType(ScalingUtils.ScaleType.FIT_CENTER)
-                            .setFadeDuration(300)
-                            .build();
-            photoDraweeView.setImageURI(urls[position]);
-            photoDraweeView.update(1080,720);
-            photoDraweeView.setHierarchy(hierarchy);
-//            utils.loadImage(MainActivity.this,intensifyImageView,urls[position],viewPager.getWidth(),viewPager.getHeight());
+//            final PhotoDraweeView photoDraweeView = new PhotoDraweeView(MainActivity.this);
+////
+//            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(urls[position]))
+//                    .setResizeOptions(new ResizeOptions(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels))
+//                    .build();
+//            photoDraweeView.setController(Fresco.newDraweeControllerBuilder()
+//                    .setOldController(photoDraweeView.getController())
+//                    .setImageRequest(request)
+//                    .setAutoPlayAnimations(true)
+//                    .setControllerListener(new BaseControllerListener<ImageInfo>() {
+//                        @Override
+//                        public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
+//                            super.onFinalImageSet(id, imageInfo, animatable);
+////                            photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
+//                            //从本地获取已缓存的文件，用于图片二维码识别
+//                        }
+//                    })
+//                    .build());
+//            GenericDraweeHierarchy hierarchy =
+//                    new GenericDraweeHierarchyBuilder(container.getResources())
+//                            .setActualImageScaleType(ScalingUtils.ScaleType.FIT_CENTER)
+//                            .setFadeDuration(300)
+//                            .build();
+//            photoDraweeView.setImageURI(urls[position]);
+//            photoDraweeView.update(1080,720);
+//            photoDraweeView.setHierarchy(hierarchy);
+//            utils.loadImage(MainActivity.this,intensifyImageView,urls[position]);
 //            container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-            container.addView(photoDraweeView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-            return photoDraweeView;
+//            return intensifyImageView;
+//            container.addView(photoDraweeView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+//            return photoDraweeView;
         }
 
         @Override

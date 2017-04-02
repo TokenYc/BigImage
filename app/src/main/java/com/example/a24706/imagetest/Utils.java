@@ -61,7 +61,7 @@ public class Utils {
 
 
 
-    public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, final int parentWidth, final int parentHeight) {
+    public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url) {
         if (mExecutor==null){
             mExecutor= Executors.newCachedThreadPool();
         }
@@ -78,10 +78,11 @@ public class Utils {
                     try {
                         CloseableBitmap closeableBitmap = closeableReference.get();
                         final Bitmap bitmap = closeableBitmap.getUnderlyingBitmap();
+//                        Log.d("image", "bitmap width====>" + bitmap.getWidth() + "bitmap height=====>" + bitmap.getHeight());
                         if (bitmap != null && !bitmap.isRecycled()) {
-                            intensifyImage.setImage(Bitmap2InputStream(bitmap));
                             intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-                            intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(),bitmap.getHeight(),parentWidth,parentHeight));
+                            intensifyImage.setImage(Bitmap2InputStream(bitmap));
+                            intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(),bitmap.getHeight(),context.getResources().getDisplayMetrics().widthPixels,context.getResources().getDisplayMetrics().heightPixels));
                             intensifyImage.setMinimumScale(1);
                             //// TODO: 2017/3/15  通过计算得到ScaleMin和ScaleMax
                             //如果使用文件作为BitmapRegionDecoder的输入，有的图片在Skia解码的时候会失败，抛出异常需要使用BitmapFactory重新对文件进行解码
@@ -159,4 +160,6 @@ public class Utils {
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         return is;
     }
+
+
 }
