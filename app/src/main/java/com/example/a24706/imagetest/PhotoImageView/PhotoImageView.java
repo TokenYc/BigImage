@@ -1,4 +1,4 @@
-package com.example.a24706.imagetest;
+package com.example.a24706.imagetest.PhotoImageView;
 
 import android.content.Context;
 import android.graphics.drawable.Animatable;
@@ -7,20 +7,15 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.example.a24706.imagetest.photodraweeview.PhotoDraweeView;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
-import com.facebook.drawee.drawable.ScalingUtils;
-import com.facebook.drawee.generic.GenericDraweeHierarchy;
-import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
-import me.kareluo.intensify.image.IntensifyImage;
 import me.kareluo.intensify.image.IntensifyImageView;
 
 /**
@@ -34,6 +29,7 @@ import me.kareluo.intensify.image.IntensifyImageView;
 
 public class PhotoImageView extends RelativeLayout{
     private Utils utils;
+    private PhotoLoadingView photoLoadingView;
 
     public PhotoImageView(Context context) {
         this(context,null);
@@ -49,13 +45,19 @@ public class PhotoImageView extends RelativeLayout{
     }
 
     private void init() {
-
+        photoLoadingView = new PhotoLoadingView(getContext());
     }
 
     public void loadImage(final String url){
+        Uri uri;
+        if (url.startsWith("/storage/")||url.startsWith("/data")) {
+            uri = Uri.parse("file://" + getContext().getPackageName() + "/" + url);
+        }else{
+            uri = Uri.parse(url);
+        }
         final PhotoDraweeView photoDraweeView = new PhotoDraweeView(getContext());
 //
-        ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(url))
+        ImageRequest request = ImageRequestBuilder.newBuilderWithSource(uri)
                 .setResizeOptions(new ResizeOptions(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels))
                 .build();
         photoDraweeView.setController(Fresco.newDraweeControllerBuilder()
@@ -70,7 +72,11 @@ public class PhotoImageView extends RelativeLayout{
                             photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
                         if (imageInfo.getHeight()/imageInfo.getWidth()>4){
                             removeView(photoDraweeView);
-                            addLongImageView(url);
+                            removeView(photoLoadingView);
+                            addLongImageView(url,photoLoadingView);
+                            addView(photoLoadingView);
+                        }else{
+                            photoLoadingView.dismiss();
                         }
                         //从本地获取已缓存的文件，用于图片二维码识别
                     }
@@ -85,15 +91,16 @@ public class PhotoImageView extends RelativeLayout{
 //        photoDraweeView.update(1080,720);
 //        photoDraweeView.setHierarchy(hierarchy);
         addView(photoDraweeView, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(photoLoadingView, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        photoLoadingView.show();
     }
 
-    private void addLongImageView(String url) {
+    private void addLongImageView(String url, PhotoLoadingView photoLoadingView) {
         IntensifyImageView intensifyImageView = new IntensifyImageView(getContext());
         if (utils==null){
             utils=new Utils();
         }
-        utils.loadImage(getContext(),intensifyImageView,url);
+        utils.loadImage(getContext(),intensifyImageView,url,photoLoadingView);
         addView(intensifyImageView, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-
     }
 }

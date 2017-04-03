@@ -1,4 +1,4 @@
-package com.example.a24706.imagetest;
+package com.example.a24706.imagetest.PhotoImageView;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -61,7 +61,36 @@ public class Utils {
 
 
 
-    public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url) {
+    public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView) {
+        if (url.startsWith("/storage/")||url.startsWith("/data")) {
+            loadLocalLongImage(context,intensifyImage,url,photoLoadingView);
+        }else{
+            loadRemoteLongImage(context,intensifyImage,url,photoLoadingView);
+        }
+    }
+
+    private void loadLocalLongImage(final Context context, final IntensifyImageView intensifyImage, final String url, final PhotoLoadingView photoLoadingView) {
+        new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    File file = new File(url);
+                    final Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),getBitmapOption(1));
+                    intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
+                    intensifyImage.setMinimumScale(0.5f);
+                    intensifyImage.setMaximumScale(5.0f);
+                    final InputStream inputStream=Bitmap2InputStream(bitmap);
+                    intensifyImage.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            intensifyImage.setImage(inputStream);
+                            photoLoadingView.dismiss();
+                        }
+                    });
+                }
+            }).start();
+    }
+
+    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, String url, final PhotoLoadingView photoLoadingView){
         if (mExecutor==null){
             mExecutor= Executors.newCachedThreadPool();
         }
@@ -84,6 +113,12 @@ public class Utils {
                             intensifyImage.setImage(Bitmap2InputStream(bitmap));
                             intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(),bitmap.getHeight(),context.getResources().getDisplayMetrics().widthPixels,context.getResources().getDisplayMetrics().heightPixels));
                             intensifyImage.setMinimumScale(1);
+                            photoLoadingView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    photoLoadingView.dismiss();
+                                }
+                            });
                             //// TODO: 2017/3/15  通过计算得到ScaleMin和ScaleMax
                             //如果使用文件作为BitmapRegionDecoder的输入，有的图片在Skia解码的时候会失败，抛出异常需要使用BitmapFactory重新对文件进行解码
 
@@ -161,5 +196,13 @@ public class Utils {
         return is;
     }
 
+    private BitmapFactory.Options getBitmapOption(int inSampleSize){
+        System.gc();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPurgeable = true;
+        options.inSampleSize = inSampleSize;
+        options.inPreferredConfig= Bitmap.Config.ARGB_4444;
+        return options;
+    }
 
 }

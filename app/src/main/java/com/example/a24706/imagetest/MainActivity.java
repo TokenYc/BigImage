@@ -1,56 +1,21 @@
 package com.example.a24706.imagetest;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Animatable;
-import android.net.Uri;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import com.example.a24706.imagetest.photodraweeview.PhotoDraweeView;
-import com.facebook.binaryresource.BinaryResource;
-import com.facebook.binaryresource.FileBinaryResource;
-import com.facebook.cache.common.CacheKey;
-import com.facebook.common.references.CloseableReference;
-import com.facebook.datasource.BaseDataSubscriber;
-import com.facebook.datasource.DataSource;
-import com.facebook.datasource.DataSubscriber;
+import com.example.a24706.imagetest.PhotoImageView.PhotoImageView;
+import com.example.a24706.imagetest.PhotoImageView.Utils;
 import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.drawee.controller.BaseControllerListener;
-import com.facebook.drawee.drawable.ScalingUtils;
-import com.facebook.drawee.generic.GenericDraweeHierarchy;
-import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
-import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.cache.DefaultCacheKeyFactory;
-import com.facebook.imagepipeline.common.ResizeOptions;
-import com.facebook.imagepipeline.core.ImagePipeline;
-import com.facebook.imagepipeline.core.ImagePipelineFactory;
-import com.facebook.imagepipeline.image.CloseableBitmap;
-import com.facebook.imagepipeline.image.CloseableImage;
-import com.facebook.imagepipeline.image.ImageInfo;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import me.kareluo.intensify.image.IntensifyImage;
 import me.kareluo.intensify.image.IntensifyImageView;
 
 
@@ -72,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
             "http://7xpp4m.com1.z0.glb.clouddn.com/article.jpg",
             "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
-            "http://qianfan-qianfanyun.qiniudn.com/20170227271488161061406929.jpg?imageView2/1/w/640/h/852/interlace/1/q/100",
+            "/storage/emulated/0/Tencent/QQ_Images/article.jpg",
             "http://qianfan-qianfanyun.qiniudn.com/20170227271488161042740429.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170214271487056042560969.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
