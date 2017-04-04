@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.a24706.imagetest.PhotoImageView.PhotoImageView;
-import com.example.a24706.imagetest.PhotoImageView.Utils;
+import com.example.a24706.imagetest.PhotoImageView.LongImageHelper;
 import com.facebook.drawee.backends.pipeline.Fresco;
 
 import java.io.ByteArrayInputStream;
@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
             "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
             "http://7xpp4m.com1.z0.glb.clouddn.com/article.jpg",
-            "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
+            //本地图片地址需要测试可以把图片下载到本地，加上本地路径
+//            "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "/storage/emulated/0/Tencent/QQ_Images/article.jpg",
             "http://qianfan-qianfanyun.qiniudn.com/20170227271488161042740429.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170214271487056042560969.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
@@ -56,15 +57,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         viewPager = (FixedViewPager) findViewById(R.id.viewpager);
         viewPager.setAdapter(new MyPagerAdapter());
-//        String imagePath= Environment.getExternalStorageDirectory()+ File.separator+"hhz.png";
-
-//        intensifyImageView.setImage(new File(imagePath));
-//        Utils utils = new Utils();
-//        utils.loadImage(this, intensifyImageView, mUrl);
     }
 
     class MyPagerAdapter extends PagerAdapter {
-        Utils utils;
 
         @Override
         public int getCount() {
@@ -78,84 +73,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            final IntensifyImageView intensifyImageView = new IntensifyImageView(MainActivity.this);
-            if (utils==null){
-                utils=new Utils();
-            }
-            PhotoImageView photoImageView=new PhotoImageView(MainActivity.this);
+            PhotoImageView photoImageView = new PhotoImageView(MainActivity.this);
             photoImageView.loadImage(urls[position]);
-            container.addView(photoImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            container.addView(photoImageView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return photoImageView;
-            //todo 查看源码找到图片双击后缩放的最大倍数
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    File file = new File("/storage/emulated/0/tencent/QQ_Images/-4e6e4885e7818ae2.jpg");
-//                    final Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),getBitmapOption(1));
-//                    intensifyImageView.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-//                    intensifyImageView.setMinimumScale(0.5f);
-//                    intensifyImageView.setMaximumScale(5.0f);
-//                    final InputStream inputStream=Bitmap2InputStream(bitmap);
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            intensifyImageView.setImage(inputStream);
-//                        }
-//                    });
-//                }
-//            }).start();
-//            final PhotoDraweeView photoDraweeView = new PhotoDraweeView(MainActivity.this);
-////
-//            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(urls[position]))
-//                    .setResizeOptions(new ResizeOptions(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels))
-//                    .build();
-//            photoDraweeView.setController(Fresco.newDraweeControllerBuilder()
-//                    .setOldController(photoDraweeView.getController())
-//                    .setImageRequest(request)
-//                    .setAutoPlayAnimations(true)
-//                    .setControllerListener(new BaseControllerListener<ImageInfo>() {
-//                        @Override
-//                        public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
-//                            super.onFinalImageSet(id, imageInfo, animatable);
-////                            photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
-//                            //从本地获取已缓存的文件，用于图片二维码识别
-//                        }
-//                    })
-//                    .build());
-//            GenericDraweeHierarchy hierarchy =
-//                    new GenericDraweeHierarchyBuilder(container.getResources())
-//                            .setActualImageScaleType(ScalingUtils.ScaleType.FIT_CENTER)
-//                            .setFadeDuration(300)
-//                            .build();
-//            photoDraweeView.setImageURI(urls[position]);
-//            photoDraweeView.update(1080,720);
-//            photoDraweeView.setHierarchy(hierarchy);
-//            utils.loadImage(MainActivity.this,intensifyImageView,urls[position]);
-//            container.addView(intensifyImageView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-//            return intensifyImageView;
-//            container.addView(photoDraweeView,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-//            return photoDraweeView;
         }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             container.removeView((View) object);
         }
-    }
-
-    private BitmapFactory.Options getBitmapOption(int inSampleSize){
-        System.gc();
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPurgeable = true;
-        options.inSampleSize = inSampleSize;
-        options.inPreferredConfig= Bitmap.Config.ARGB_4444;
-        return options;
-    }
-
-    public InputStream Bitmap2InputStream(Bitmap bm) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        InputStream is = new ByteArrayInputStream(baos.toByteArray());
-        return is;
     }
 }

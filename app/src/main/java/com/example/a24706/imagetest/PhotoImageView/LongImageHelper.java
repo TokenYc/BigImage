@@ -3,6 +3,7 @@ package com.example.a24706.imagetest.PhotoImageView;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.util.Log;
 
@@ -37,62 +38,99 @@ import me.kareluo.intensify.image.IntensifyImageView;
  * Created by 24706 on 2017/3/8.
  */
 
-public class Utils {
+public class LongImageHelper {
 
-    private  ExecutorService mExecutor;
+    private ExecutorService mExecutor;
+
     /**
      * 判断图片是否为gif
+     *
      * @param path
      * @return
      */
-    public static boolean isGif(String path){
-        BitmapFactory.Options options=new BitmapFactory.Options();
-        options.inJustDecodeBounds=true;
+    public  boolean isGif(String path) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
-        String type=options.outMimeType;
-        if (type.contains("gif")){
+        String type = options.outMimeType;
+        if (type.contains("gif")) {
             return true;
-        }else{
+        } else {
+            return false;
+        }
+    }
+
+    public  boolean isGif(InputStream inputStream) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(inputStream,null, options);
+        String type = options.outMimeType;
+        if (type.contains("gif")) {
+            return true;
+        } else {
             return false;
         }
     }
 
 
-
-
-
+    /**
+     * 加载长图，区分本地图片和远程图片
+     *
+     * @param context
+     * @param intensifyImage
+     * @param url
+     * @param photoLoadingView
+     */
     public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView) {
-        if (url.startsWith("/storage/")||url.startsWith("/data")) {
-            loadLocalLongImage(context,intensifyImage,url,photoLoadingView);
-        }else{
-            loadRemoteLongImage(context,intensifyImage,url,photoLoadingView);
+        if (url.startsWith("/storage/") || url.startsWith("/data")) {
+            loadLocalLongImage(context,intensifyImage, url, photoLoadingView);
+        } else {
+            loadRemoteLongImage(context, intensifyImage, url, photoLoadingView);
         }
     }
 
-    private void loadLocalLongImage(final Context context, final IntensifyImageView intensifyImage, final String url, final PhotoLoadingView photoLoadingView) {
+    /**
+     * 加载本地长图
+     * @param context
+     * @param intensifyImage
+     * @param path
+     * @param photoLoadingView
+     */
+    private void loadLocalLongImage(final Context context, final IntensifyImageView intensifyImage, final String path, final PhotoLoadingView photoLoadingView) {
+        if (isGif(path)){
+            return;
+        }
         new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    File file = new File(url);
-                    final Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),getBitmapOption(1));
-                    intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-                    intensifyImage.setMinimumScale(0.5f);
-                    intensifyImage.setMaximumScale(5.0f);
-                    final InputStream inputStream=Bitmap2InputStream(bitmap);
-                    intensifyImage.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            intensifyImage.setImage(inputStream);
-                            photoLoadingView.dismiss();
-                        }
-                    });
-                }
-            }).start();
+            @Override
+            public void run() {
+                File file = new File(path);
+                final Bitmap bitmap = BitmapFactory.decodeFile(file.getPath(), getBitmapOption(1));
+                intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
+                intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(), bitmap.getHeight(), context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels));
+                intensifyImage.setMinimumScale(1f);
+                final InputStream inputStream = Bitmap2InputStream(bitmap);
+                intensifyImage.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        intensifyImage.setImage(inputStream);
+                        photoLoadingView.dismiss();
+                    }
+                });
+            }
+        }).start();
     }
 
-    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, String url, final PhotoLoadingView photoLoadingView){
-        if (mExecutor==null){
-            mExecutor= Executors.newCachedThreadPool();
+
+    /**
+     * 加载网络长图
+     * @param context
+     * @param intensifyImage
+     * @param url
+     * @param photoLoadingView
+     */
+    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, String url, final PhotoLoadingView photoLoadingView) {
+        if (mExecutor == null) {
+            mExecutor = Executors.newCachedThreadPool();
         }
         DataSubscriber dataSubscriber = new BaseDataSubscriber<CloseableReference<CloseableBitmap>>() {
             @Override
@@ -110,44 +148,19 @@ public class Utils {
 //                        Log.d("image", "bitmap width====>" + bitmap.getWidth() + "bitmap height=====>" + bitmap.getHeight());
                         if (bitmap != null && !bitmap.isRecycled()) {
                             intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
+                            InputStream inputStream = Bitmap2InputStream(bitmap);
+                            if (isGif(inputStream)){
+                                return;
+                            }
                             intensifyImage.setImage(Bitmap2InputStream(bitmap));
-                            intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(),bitmap.getHeight(),context.getResources().getDisplayMetrics().widthPixels,context.getResources().getDisplayMetrics().heightPixels));
-                            intensifyImage.setMinimumScale(1);
+                            intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(), bitmap.getHeight(), context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels));
+                            intensifyImage.setMinimumScale(1.0f);
                             photoLoadingView.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     photoLoadingView.dismiss();
                                 }
                             });
-                            //// TODO: 2017/3/15  通过计算得到ScaleMin和ScaleMax
-                            //如果使用文件作为BitmapRegionDecoder的输入，有的图片在Skia解码的时候会失败，抛出异常需要使用BitmapFactory重新对文件进行解码
-
-//                            handler.sendEmptyMessage(0);//图片加载完毕后获取文件
-//                            runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                            ImageRequest imageRequest = ImageRequest.fromUri(url);
-//                            CacheKey cacheKey = DefaultCacheKeyFactory.getInstance()
-//                                    .getEncodedCacheKey(imageRequest, this);
-//                            BinaryResource resource = ImagePipelineFactory.getInstance()
-//                                    .getMainDiskStorageCache().getResource(cacheKey);
-//                            File file = ((FileBinaryResource) resource).getFile();
-//                            if (file.exists()) {
-//                                BitmapFactory.Options options=new BitmapFactory.Options();
-//                                options.inJustDecodeBounds=true;
-//                                BitmapFactory.decodeFile(file.getPath(), options);
-//                                String type=options.outMimeType;
-//                                Log.d("yangchen", "type---->" + options.inPreferredConfig.toString());
-//                                try {
-//                                    intensifyImage.setImage("/storage/emulated/0/tencent/QQ_Images/20170210271486692447480144.jpg");
-//                                    intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-//                                }catch (RuntimeException e){
-//                                    e.printStackTrace();
-//                                }
-//
-//                            }
-//                                }
-//                            });
                         }
                     } finally {
                         imageReference.close();
@@ -165,11 +178,11 @@ public class Utils {
         getBitmap(context, Uri.parse(url), dataSubscriber);
     }
 
-    private float getMaxScale(int bmWidth,int bmHeight,int parentWidth,int parentHeight) {
-        if (bmHeight>=parentHeight){
-            return (float)parentWidth*3/(float)bmWidth;
-        }else{
-            return (float)parentWidth*((float)parentHeight/(float)bmHeight)*3/bmWidth;
+    private float getMaxScale(int bmWidth, int bmHeight, int parentWidth, int parentHeight) {
+        if (bmHeight >= parentHeight) {
+            return (float) parentWidth * 3 / (float) bmWidth;
+        } else {
+            return (float) parentWidth * ((float) parentHeight / (float) bmHeight) * 3 / bmWidth;
         }
     }
 
@@ -196,12 +209,12 @@ public class Utils {
         return is;
     }
 
-    private BitmapFactory.Options getBitmapOption(int inSampleSize){
+    private BitmapFactory.Options getBitmapOption(int inSampleSize) {
         System.gc();
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPurgeable = true;
         options.inSampleSize = inSampleSize;
-        options.inPreferredConfig= Bitmap.Config.ARGB_4444;
+        options.inPreferredConfig = Bitmap.Config.ARGB_4444;
         return options;
     }
 

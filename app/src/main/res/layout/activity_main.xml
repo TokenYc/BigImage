@@ -10,6 +10,8 @@
     <com.example.a24706.imagetest.FixedViewPager
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="#000000"
+        />
 
 </LinearLayout>

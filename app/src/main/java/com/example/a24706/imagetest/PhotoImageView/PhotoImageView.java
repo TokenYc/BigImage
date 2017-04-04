@@ -27,16 +27,18 @@ import me.kareluo.intensify.image.IntensifyImageView;
  * @see [相关类/方法](可选)
  */
 
-public class PhotoImageView extends RelativeLayout{
-    private Utils utils;
+public class PhotoImageView extends RelativeLayout {
+    private static final int DEFAULT_LONG_IMAGE_RATIO=4;
+    private int longImageRatio;
+    private LongImageHelper longImageHelper;
     private PhotoLoadingView photoLoadingView;
 
     public PhotoImageView(Context context) {
-        this(context,null);
+        this(context, null);
     }
 
     public PhotoImageView(Context context, AttributeSet attrs) {
-        this(context, attrs,0);
+        this(context, attrs, 0);
     }
 
     public PhotoImageView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -48,11 +50,11 @@ public class PhotoImageView extends RelativeLayout{
         photoLoadingView = new PhotoLoadingView(getContext());
     }
 
-    public void loadImage(final String url){
+    public void loadImage(final String url) {
         Uri uri;
-        if (url.startsWith("/storage/")||url.startsWith("/data")) {
+        if (url.startsWith("/storage/") || url.startsWith("/data")) {
             uri = Uri.parse("file://" + getContext().getPackageName() + "/" + url);
-        }else{
+        } else {
             uri = Uri.parse(url);
         }
         final PhotoDraweeView photoDraweeView = new PhotoDraweeView(getContext());
@@ -69,38 +71,31 @@ public class PhotoImageView extends RelativeLayout{
                     public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
                         super.onFinalImageSet(id, imageInfo, animatable);
                         Log.d("image", "width====>" + imageInfo.getWidth() + "height====>" + imageInfo.getHeight());
-                            photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
-                        if (imageInfo.getHeight()/imageInfo.getWidth()>4){
+                        photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
+                        if ((imageInfo.getHeight() / imageInfo.getWidth() > 4)&&
+                                (imageInfo.getHeight()>getResources().getDisplayMetrics().heightPixels)
+                                &&!url.endsWith(".gif")) {
                             removeView(photoDraweeView);
                             removeView(photoLoadingView);
-                            addLongImageView(url,photoLoadingView);
+                            addLongImageView(url, photoLoadingView);
                             addView(photoLoadingView);
-                        }else{
+                        } else {
                             photoLoadingView.dismiss();
                         }
-                        //从本地获取已缓存的文件，用于图片二维码识别
                     }
                 })
                 .build());
-//        GenericDraweeHierarchy hierarchy =
-//                new GenericDraweeHierarchyBuilder(getContext().getResources())
-//                        .setActualImageScaleType(ScalingUtils.ScaleType.FIT_CENTER)
-//                        .setFadeDuration(300)
-//                        .build();
-//        photoDraweeView.setImageURI(url);
-//        photoDraweeView.update(1080,720);
-//        photoDraweeView.setHierarchy(hierarchy);
-        addView(photoDraweeView, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-        addView(photoLoadingView, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(photoDraweeView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(photoLoadingView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         photoLoadingView.show();
     }
 
     private void addLongImageView(String url, PhotoLoadingView photoLoadingView) {
         IntensifyImageView intensifyImageView = new IntensifyImageView(getContext());
-        if (utils==null){
-            utils=new Utils();
+        if (longImageHelper == null) {
+            longImageHelper = new LongImageHelper();
         }
-        utils.loadImage(getContext(),intensifyImageView,url,photoLoadingView);
-        addView(intensifyImageView, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        longImageHelper.loadImage(getContext(), intensifyImageView, url, photoLoadingView);
+        addView(intensifyImageView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 }
