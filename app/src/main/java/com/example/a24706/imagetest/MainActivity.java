@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             "http://7xpp4m.com1.z0.glb.clouddn.com/article.jpg",
             //本地图片地址需要测试可以把图片下载到本地，加上本地路径
 //            "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
-            "/storage/emulated/0/Tencent/QQ_Images/article.jpg",
+//            "/storage/emulated/0/Tencent/QQ_Images/article.jpg",
             "http://qianfan-qianfanyun.qiniudn.com/20170227271488161042740429.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170214271487056042560969.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
