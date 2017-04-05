@@ -1,1 +1,1 @@
-include ':app', ':IntensifyImageView'
+include ':app'

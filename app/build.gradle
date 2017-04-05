@@ -28,5 +28,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.facebook.fresco:fresco:0.12.0'
     compile 'com.facebook.fresco:animated-gif:0.12.0'
-    compile project(':IntensifyImageView')
+    compile 'me.kareluo.intensify:image:1.1.0'
 }
