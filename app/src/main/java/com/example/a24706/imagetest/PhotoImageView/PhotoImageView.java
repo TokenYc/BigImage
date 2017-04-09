@@ -72,8 +72,7 @@ public class PhotoImageView extends RelativeLayout {
                         super.onFinalImageSet(id, imageInfo, animatable);
                         Log.d("image", "width====>" + imageInfo.getWidth() + "height====>" + imageInfo.getHeight());
                         photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
-                        if ((imageInfo.getHeight() / imageInfo.getWidth() > 4)&&
-                                (imageInfo.getHeight()>getResources().getDisplayMetrics().heightPixels)
+                        if ((imageInfo.getHeight() / imageInfo.getWidth() > 4)
                                 &&!url.endsWith(".gif")) {
                             removeView(photoDraweeView);
                             removeView(photoLoadingView);

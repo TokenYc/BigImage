@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import com.example.a24706.imagetest.PhotoImageView.PhotoImageView;
 import com.example.a24706.imagetest.PhotoImageView.LongImageHelper;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.core.ImagePipelineConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,7 +53,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fresco.initialize(this);
+        ImagePipelineConfig config = ImagePipelineConfig.newBuilder(this)
+                .setDownsampleEnabled(true)
+                .build();
+        //初始化Fresco
+        Fresco.initialize(this, config);
 
         setContentView(R.layout.activity_main);
         viewPager = (FixedViewPager) findViewById(R.id.viewpager);

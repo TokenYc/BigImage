@@ -10,6 +10,7 @@ import android.util.Log;
 import com.facebook.binaryresource.BinaryResource;
 import com.facebook.binaryresource.FileBinaryResource;
 import com.facebook.cache.common.CacheKey;
+import com.facebook.cache.common.SimpleCacheKey;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.BaseDataSubscriber;
 import com.facebook.datasource.DataSource;
@@ -48,7 +49,7 @@ public class LongImageHelper {
      * @param path
      * @return
      */
-    public  boolean isGif(String path) {
+    public boolean isGif(String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
@@ -60,10 +61,10 @@ public class LongImageHelper {
         }
     }
 
-    public  boolean isGif(InputStream inputStream) {
+    public boolean isGif(InputStream inputStream) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(inputStream,null, options);
+        BitmapFactory.decodeStream(inputStream, null, options);
         String type = options.outMimeType;
         if (type.contains("gif")) {
             return true;
@@ -83,7 +84,7 @@ public class LongImageHelper {
      */
     public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView) {
         if (url.startsWith("/storage/") || url.startsWith("/data")) {
-            loadLocalLongImage(context,intensifyImage, url, photoLoadingView);
+            loadLocalLongImage(context, intensifyImage, url, photoLoadingView);
         } else {
             loadRemoteLongImage(context, intensifyImage, url, photoLoadingView);
         }
@@ -91,13 +92,14 @@ public class LongImageHelper {
 
     /**
      * 加载本地长图
+     *
      * @param context
      * @param intensifyImage
      * @param path
      * @param photoLoadingView
      */
     private void loadLocalLongImage(final Context context, final IntensifyImageView intensifyImage, final String path, final PhotoLoadingView photoLoadingView) {
-        if (isGif(path)){
+        if (isGif(path)) {
             return;
         }
         new Thread(new Runnable() {
@@ -123,12 +125,13 @@ public class LongImageHelper {
 
     /**
      * 加载网络长图
+     *
      * @param context
      * @param intensifyImage
      * @param url
      * @param photoLoadingView
      */
-    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, String url, final PhotoLoadingView photoLoadingView) {
+    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, final String url, final PhotoLoadingView photoLoadingView) {
         if (mExecutor == null) {
             mExecutor = Executors.newCachedThreadPool();
         }
@@ -147,20 +150,22 @@ public class LongImageHelper {
                         final Bitmap bitmap = closeableBitmap.getUnderlyingBitmap();
 //                        Log.d("image", "bitmap width====>" + bitmap.getWidth() + "bitmap height=====>" + bitmap.getHeight());
                         if (bitmap != null && !bitmap.isRecycled()) {
-                            intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
-                            InputStream inputStream = Bitmap2InputStream(bitmap);
-                            if (isGif(inputStream)){
-                                return;
+                            FileBinaryResource resource = (FileBinaryResource)Fresco.getImagePipelineFactory().getMainFileCache().getResource(new SimpleCacheKey(url));
+                            File file = resource.getFile();
+                            if (file.exists()) {
+                                final Bitmap tartgetBitmap = BitmapFactory.decodeFile(file.getPath(), getBitmapOption(1));
+                                intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
+                                intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(), bitmap.getHeight(), context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels));
+                                intensifyImage.setMinimumScale(1f);
+                                final InputStream inputStream = Bitmap2InputStream(tartgetBitmap);
+                                intensifyImage.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        intensifyImage.setImage(inputStream);
+                                        photoLoadingView.dismiss();
+                                    }
+                                });
                             }
-                            intensifyImage.setImage(Bitmap2InputStream(bitmap));
-                            intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(), bitmap.getHeight(), context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels));
-                            intensifyImage.setMinimumScale(1.0f);
-                            photoLoadingView.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    photoLoadingView.dismiss();
-                                }
-                            });
                         }
                     } finally {
                         imageReference.close();
