@@ -3,22 +3,17 @@ package com.example.a24706.imagetest.PhotoImageView;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.net.Uri;
-import android.util.Log;
 
-import com.facebook.binaryresource.BinaryResource;
+import com.example.a24706.imagetest.PhotoImageView.PhotoLoadingView;
 import com.facebook.binaryresource.FileBinaryResource;
-import com.facebook.cache.common.CacheKey;
 import com.facebook.cache.common.SimpleCacheKey;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.BaseDataSubscriber;
 import com.facebook.datasource.DataSource;
 import com.facebook.datasource.DataSubscriber;
 import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.imagepipeline.cache.DefaultCacheKeyFactory;
 import com.facebook.imagepipeline.core.ImagePipeline;
-import com.facebook.imagepipeline.core.ImagePipelineFactory;
 import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
@@ -28,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,7 +43,7 @@ public class LongImageHelper {
      * @param path
      * @return
      */
-    public boolean isGif(String path) {
+    public  boolean isGif(String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
@@ -61,10 +55,10 @@ public class LongImageHelper {
         }
     }
 
-    public boolean isGif(InputStream inputStream) {
+    public  boolean isGif(InputStream inputStream) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(inputStream, null, options);
+        BitmapFactory.decodeStream(inputStream,null, options);
         String type = options.outMimeType;
         if (type.contains("gif")) {
             return true;
@@ -84,7 +78,7 @@ public class LongImageHelper {
      */
     public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView) {
         if (url.startsWith("/storage/") || url.startsWith("/data")) {
-            loadLocalLongImage(context, intensifyImage, url, photoLoadingView);
+            loadLocalLongImage(context,intensifyImage, url, photoLoadingView);
         } else {
             loadRemoteLongImage(context, intensifyImage, url, photoLoadingView);
         }
@@ -92,14 +86,13 @@ public class LongImageHelper {
 
     /**
      * 加载本地长图
-     *
      * @param context
      * @param intensifyImage
      * @param path
      * @param photoLoadingView
      */
     private void loadLocalLongImage(final Context context, final IntensifyImageView intensifyImage, final String path, final PhotoLoadingView photoLoadingView) {
-        if (isGif(path)) {
+        if (isGif(path)){
             return;
         }
         new Thread(new Runnable() {
@@ -125,7 +118,6 @@ public class LongImageHelper {
 
     /**
      * 加载网络长图
-     *
      * @param context
      * @param intensifyImage
      * @param url
@@ -148,7 +140,6 @@ public class LongImageHelper {
                     try {
                         CloseableBitmap closeableBitmap = closeableReference.get();
                         final Bitmap bitmap = closeableBitmap.getUnderlyingBitmap();
-//                        Log.d("image", "bitmap width====>" + bitmap.getWidth() + "bitmap height=====>" + bitmap.getHeight());
                         if (bitmap != null && !bitmap.isRecycled()) {
                             FileBinaryResource resource = (FileBinaryResource)Fresco.getImagePipelineFactory().getMainFileCache().getResource(new SimpleCacheKey(url));
                             File file = resource.getFile();
@@ -221,6 +212,25 @@ public class LongImageHelper {
         options.inSampleSize = inSampleSize;
         options.inPreferredConfig = Bitmap.Config.ARGB_4444;
         return options;
+    }
+
+
+    /**
+     * 判断是否为长图 或 宽图
+     * @param context
+     * @param width
+     * @param height
+     * @param ratio
+     * @return
+     */
+    public  static boolean isLongImage(Context context,int width,int height,int ratio){
+        if ((height/width>ratio)&&(height>context.getResources().getDisplayMetrics().heightPixels)){
+            return true;
+        }else if ((width/height>ratio)&&(width>context.getResources().getDisplayMetrics().widthPixels)){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 }

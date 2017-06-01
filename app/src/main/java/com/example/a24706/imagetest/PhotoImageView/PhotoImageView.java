@@ -28,7 +28,7 @@ import me.kareluo.intensify.image.IntensifyImageView;
  */
 
 public class PhotoImageView extends RelativeLayout {
-    private static final int DEFAULT_LONG_IMAGE_RATIO=4;
+    private static final int DEFAULT_LONG_IMAGE_RATIO = 4;
     private int longImageRatio;
     private LongImageHelper longImageHelper;
     private PhotoLoadingView photoLoadingView;
@@ -72,8 +72,8 @@ public class PhotoImageView extends RelativeLayout {
                         super.onFinalImageSet(id, imageInfo, animatable);
                         Log.d("image", "width====>" + imageInfo.getWidth() + "height====>" + imageInfo.getHeight());
                         photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
-                        if ((imageInfo.getHeight() / imageInfo.getWidth() > 4)
-                                &&!url.endsWith(".gif")) {
+                        if (LongImageHelper.isLongImage(getContext(), imageInfo.getWidth(), imageInfo.getHeight(), DEFAULT_LONG_IMAGE_RATIO)
+                                && !url.endsWith(".gif")) {
                             removeView(photoDraweeView);
                             removeView(photoLoadingView);
                             addLongImageView(url, photoLoadingView);
