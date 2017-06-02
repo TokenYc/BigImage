@@ -5,9 +5,12 @@ import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.example.a24706.imagetest.photodraweeview.OnPhotoTapListener;
+import com.example.a24706.imagetest.photodraweeview.OnViewTapListener;
 import com.example.a24706.imagetest.photodraweeview.PhotoDraweeView;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
@@ -16,6 +19,9 @@ import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
+import java.io.File;
+
+import me.kareluo.intensify.image.IntensifyImage;
 import me.kareluo.intensify.image.IntensifyImageView;
 
 /**
@@ -32,6 +38,9 @@ public class PhotoImageView extends RelativeLayout {
     private int longImageRatio;
     private LongImageHelper longImageHelper;
     private PhotoLoadingView photoLoadingView;
+    private OnTapListener mOnTapListener;
+    private OnFileReadyListener mOnFileReadyListener;
+    private OnImageLongClickListener mLongClickListener;
 
     public PhotoImageView(Context context) {
         this(context, null);
@@ -51,7 +60,7 @@ public class PhotoImageView extends RelativeLayout {
     }
 
     public void loadImage(final String url) {
-        Uri uri;
+        final Uri uri;
         if (url.startsWith("/storage/") || url.startsWith("/data")) {
             uri = Uri.parse("file://" + getContext().getPackageName() + "/" + url);
         } else {
@@ -72,11 +81,42 @@ public class PhotoImageView extends RelativeLayout {
                         super.onFinalImageSet(id, imageInfo, animatable);
                         Log.d("image", "width====>" + imageInfo.getWidth() + "height====>" + imageInfo.getHeight());
                         photoDraweeView.update(imageInfo.getWidth(), imageInfo.getHeight());
-                        if (LongImageHelper.isLongImage(getContext(), imageInfo.getWidth(), imageInfo.getHeight(), DEFAULT_LONG_IMAGE_RATIO)
+                        if (mOnFileReadyListener!=null){
+                            if (url.startsWith("/storage/") || url.startsWith("/data")){
+                                mOnFileReadyListener.onFileReady(new File(url),url);
+                            }else {
+                                mOnFileReadyListener.onFileReady(LongImageHelper.getImageFile(getContext(), uri), url);
+                            }
+                        }
+                        photoDraweeView.setOnPhotoTapListener(new OnPhotoTapListener() {
+                            @Override
+                            public void onPhotoTap(View view, float x, float y) {
+                                if (mOnTapListener!=null){
+                                    mOnTapListener.onTap();
+                                }
+                            }
+                        });
+                        photoDraweeView.setOnViewTapListener(new OnViewTapListener() {
+                            @Override
+                            public void onViewTap(View view, float x, float y) {
+                                if (mOnTapListener!=null){
+                                    mOnTapListener.onTap();
+                                }
+                            }
+                        });
+                        photoDraweeView.setOnLongClickListener(new OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View view) {
+                                if (mLongClickListener!=null){
+                                    mLongClickListener.onLongClick();
+                                }
+                                return false;
+                            }
+                        });
+                        if (LongImageHelper.isLongImage(imageInfo.getWidth(), imageInfo.getHeight(), DEFAULT_LONG_IMAGE_RATIO)
                                 && !url.endsWith(".gif")) {
-                            removeView(photoDraweeView);
-                            removeView(photoLoadingView);
-                            addLongImageView(url, photoLoadingView);
+                            removeAllViews();
+                            addLongImageView(url, photoLoadingView,mOnTapListener,mOnFileReadyListener,mLongClickListener);
                             addView(photoLoadingView);
                         } else {
                             photoLoadingView.dismiss();
@@ -89,12 +129,52 @@ public class PhotoImageView extends RelativeLayout {
         photoLoadingView.show();
     }
 
-    private void addLongImageView(String url, PhotoLoadingView photoLoadingView) {
+    private void addLongImageView(String url, PhotoLoadingView photoLoadingView, final OnTapListener onTapListener, OnFileReadyListener mOnFileReadyListener, final OnImageLongClickListener mLongClickListener) {
         IntensifyImageView intensifyImageView = new IntensifyImageView(getContext());
+        intensifyImageView.setOnSingleTapListener(new IntensifyImage.OnSingleTapListener() {
+            @Override
+            public void onSingleTap(boolean inside) {
+                if (onTapListener!=null){
+                    onTapListener.onTap();
+                }
+            }
+        });
+        intensifyImageView.setOnLongPressListener(new IntensifyImage.OnLongPressListener() {
+            @Override
+            public void onLongPress(boolean inside) {
+                if (mLongClickListener!=null){
+                    mLongClickListener.onLongClick();
+                }
+            }
+        });
         if (longImageHelper == null) {
             longImageHelper = new LongImageHelper();
         }
-        longImageHelper.loadImage(getContext(), intensifyImageView, url, photoLoadingView);
+        longImageHelper.loadImage(getContext(), intensifyImageView, url, photoLoadingView,mOnFileReadyListener);
         addView(intensifyImageView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    }
+
+    public interface OnTapListener{
+        void onTap();
+    }
+
+    public void setOnTapListener(OnTapListener onTapListener){
+        this.mOnTapListener=onTapListener;
+    }
+
+    public interface OnFileReadyListener{
+        void onFileReady(File file,String url);
+    }
+
+    public void setOnFileReadyListener(OnFileReadyListener onFileReadyListener) {
+        this.mOnFileReadyListener=onFileReadyListener;
+    }
+
+    public interface OnImageLongClickListener{
+        void onLongClick();
+    }
+
+    public void setOnImageLongClickListener(OnImageLongClickListener longClickListener) {
+        this.mLongClickListener=longClickListener;
     }
 }

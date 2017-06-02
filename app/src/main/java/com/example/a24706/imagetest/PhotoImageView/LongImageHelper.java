@@ -5,15 +5,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
-import com.example.a24706.imagetest.PhotoImageView.PhotoLoadingView;
+import com.facebook.binaryresource.BinaryResource;
 import com.facebook.binaryresource.FileBinaryResource;
+import com.facebook.cache.common.CacheKey;
 import com.facebook.cache.common.SimpleCacheKey;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.BaseDataSubscriber;
 import com.facebook.datasource.DataSource;
 import com.facebook.datasource.DataSubscriber;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.cache.DefaultCacheKeyFactory;
 import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.core.ImagePipelineFactory;
 import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
@@ -70,17 +73,20 @@ public class LongImageHelper {
 
     /**
      * 加载长图，区分本地图片和远程图片
-     *
-     * @param context
+     *  @param context
      * @param intensifyImage
      * @param url
      * @param photoLoadingView
+     * @param mOnFileReadyListener
      */
-    public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView) {
+    public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView, PhotoImageView.OnFileReadyListener mOnFileReadyListener) {
         if (url.startsWith("/storage/") || url.startsWith("/data")) {
             loadLocalLongImage(context,intensifyImage, url, photoLoadingView);
+            if (mOnFileReadyListener!=null) {
+                mOnFileReadyListener.onFileReady(new File(url), url);
+            }
         } else {
-            loadRemoteLongImage(context, intensifyImage, url, photoLoadingView);
+            loadRemoteLongImage(context, intensifyImage, url, photoLoadingView,mOnFileReadyListener);
         }
     }
 
@@ -122,8 +128,9 @@ public class LongImageHelper {
      * @param intensifyImage
      * @param url
      * @param photoLoadingView
+     * @param mOnFileReadyListener
      */
-    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, final String url, final PhotoLoadingView photoLoadingView) {
+    private void loadRemoteLongImage(final Context context, final IntensifyImageView intensifyImage, final String url, final PhotoLoadingView photoLoadingView, final PhotoImageView.OnFileReadyListener mOnFileReadyListener) {
         if (mExecutor == null) {
             mExecutor = Executors.newCachedThreadPool();
         }
@@ -141,9 +148,12 @@ public class LongImageHelper {
                         CloseableBitmap closeableBitmap = closeableReference.get();
                         final Bitmap bitmap = closeableBitmap.getUnderlyingBitmap();
                         if (bitmap != null && !bitmap.isRecycled()) {
-                            FileBinaryResource resource = (FileBinaryResource)Fresco.getImagePipelineFactory().getMainFileCache().getResource(new SimpleCacheKey(url));
+                            FileBinaryResource resource = (FileBinaryResource) Fresco.getImagePipelineFactory().getMainFileCache().getResource(new SimpleCacheKey(url));
                             File file = resource.getFile();
                             if (file.exists()) {
+                                if (mOnFileReadyListener!=null){
+                                    mOnFileReadyListener.onFileReady(file,url);
+                                }
                                 final Bitmap tartgetBitmap = BitmapFactory.decodeFile(file.getPath(), getBitmapOption(1));
                                 intensifyImage.setScaleType(IntensifyImage.ScaleType.FIT_AUTO);
                                 intensifyImage.setMaximumScale(getMaxScale(bitmap.getWidth(), bitmap.getHeight(), context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels));
@@ -214,19 +224,33 @@ public class LongImageHelper {
         return options;
     }
 
+    public static File getImageFile(Context context,Uri uri){
+        ImageRequest imageRequest = ImageRequest.fromUri(uri);
+        CacheKey cacheKey = DefaultCacheKeyFactory.getInstance()
+                .getEncodedCacheKey(imageRequest, context);
+        BinaryResource resource = ImagePipelineFactory.getInstance()
+                .getMainFileCache().getResource(cacheKey);
+        return  ((FileBinaryResource) resource).getFile();
+    }
 
+
+    public static boolean isLongImage(String path){
+        BitmapFactory.Options options=new BitmapFactory.Options();
+        options.inJustDecodeBounds=true;
+        BitmapFactory.decodeFile(path, options);
+        return isLongImage(options.outWidth,options.outHeight,4);
+    }
     /**
      * 判断是否为长图 或 宽图
-     * @param context
      * @param width
      * @param height
      * @param ratio
      * @return
      */
-    public  static boolean isLongImage(Context context,int width,int height,int ratio){
-        if ((height/width>ratio)&&(height>context.getResources().getDisplayMetrics().heightPixels)){
+    public  static boolean isLongImage(int width,int height,int ratio){
+        if ((height/width>ratio)){
             return true;
-        }else if ((width/height>ratio)&&(width>context.getResources().getDisplayMetrics().widthPixels)){
+        }else if (width/height>ratio){
             return true;
         }else{
             return false;
