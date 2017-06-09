@@ -80,6 +80,18 @@ public class MainActivity extends AppCompatActivity {
         public Object instantiateItem(ViewGroup container, int position) {
             PhotoImageView photoImageView = new PhotoImageView(MainActivity.this);
             photoImageView.loadImage(urls[position]);
+            photoImageView.setOnTapListener(new PhotoImageView.OnTapListener() {
+                @Override
+                public void onTap() {
+
+                }
+            });
+            photoImageView.setOnImageLongClickListener(new PhotoImageView.OnImageLongClickListener() {
+                @Override
+                public void onLongClick() {
+
+                }
+            });
             container.addView(photoImageView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return photoImageView;
         }
