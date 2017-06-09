@@ -66,7 +66,7 @@
  
          photoImageView.setOnFileReadyListener(new PhotoImageView.OnFileReadyListener() {
                     @Override
-                    public void onFileReady(final File file, final String url) {
+                    public void onFileReady(File file, String url) {
                     
                     }
          });
