@@ -80,13 +80,14 @@ public class LongImageHelper {
      * @param mOnFileReadyListener
      */
     public void loadImage(final Context context, final IntensifyImageView intensifyImage, final String url, PhotoLoadingView photoLoadingView, PhotoImageView.OnFileReadyListener mOnFileReadyListener) {
-        if (url.startsWith("/storage/") || url.startsWith("/data")) {
-            loadLocalLongImage(context,intensifyImage, url, photoLoadingView);
+        String targetUrl = url.replace("file://", "");
+        if (targetUrl.startsWith("/storage/") || targetUrl.startsWith("/data")) {
+            loadLocalLongImage(context,intensifyImage, targetUrl, photoLoadingView);
             if (mOnFileReadyListener!=null) {
-                mOnFileReadyListener.onFileReady(new File(url), url);
+                mOnFileReadyListener.onFileReady(new File(targetUrl), targetUrl);
             }
         } else {
-            loadRemoteLongImage(context, intensifyImage, url, photoLoadingView,mOnFileReadyListener);
+            loadRemoteLongImage(context, intensifyImage, targetUrl, photoLoadingView,mOnFileReadyListener);
         }
     }
 
