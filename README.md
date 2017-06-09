@@ -45,17 +45,28 @@
 
 #### 6.9更新
  - 监听点击事件
+ 
+        photoImageView.setOnTapListener(new PhotoImageView.OnTapListener() {
+                     @Override
+                     public void onTap() {
+                     
+                     }
+        });
  - 监听长按事件
 
-        photoImageView.setOnTapListener(new PhotoImageView.OnTapListener() {
-                    @Override
-                    public void onTap() {
-
-                    }
-             });
+        
         photoImageView.setOnImageLongClickListener(new PhotoImageView.OnImageLongClickListener() {
                     @Override
                     public void onLongClick() {
-
+                    
                     }
-             });
+        });
+  
+ - 监听图片文件加载完成
+ 
+         photoImageView.setOnFileReadyListener(new PhotoImageView.OnFileReadyListener() {
+                    @Override
+                    public void onFileReady(final File file, final String url) {
+                    
+                    }
+         });
