@@ -37,9 +37,12 @@ public class MainActivity extends AppCompatActivity {
             "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
             "http://7xpp4m.com1.z0.glb.clouddn.com/article.jpg",
+            "http://qianfan-qianfanyun.qiniudn.com/20170616199149757640610233.jpg?imageslim|imageView2/1/w/640/h/67|watermark/1/image/aHR0cDovL3FpYW5mYW4tcWlhbmZhbi5xaW5pdWRuLmNvbS9fMjAxNjA3MDcxNDQ1MjRfNTc3ZGZhODQ2MTc4Yy5wbmc=/gravity/NorthEast/dissolve/55",
             //本地图片地址需要测试可以把图片下载到本地，加上本地路径
 //            "http://qianfan-qianfanyun.qiniudn.com/20170301271488330620302561.jpg?imageView2/1/w/640/h/359/interlace/1/q/100",
-//            "/storage/emulated/0/Tencent/QQ_Images/article.jpg",
+//            "http://7xpp4m.com1.z0.glb.clouddn.com/%E5%AE%BD%E5%9B%BE.jpg",//宽图
+            "/storage/emulated/0/DCIM/Camera/IMG_20170614_145240.jpg",
+//            "/storage/emulated/0/Tencent/QQ_Images/article(2).jpg",
             "http://qianfan-qianfanyun.qiniudn.com/20170227271488161042740429.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/20170214271487056042560969.jpg?imageView2/1/w/640/h/640/interlace/1/q/100",
             "http://qianfan-qianfanyun.qiniudn.com/1487042529922_965.jpg?imageView2/1/w/640/h/338/interlace/1/q/100",
